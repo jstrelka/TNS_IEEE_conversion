@@ -29,14 +29,20 @@ Reset_Handler
 ;------------------------------------------------------------
 
 main
+								; start TNS to IEEE
 		ldr		r0,=TNS 		; r0 = address TNS
 		ldr		r1,[r0]			; r1 = valule at address r0
-		bl		signBit			; branch and link to TNStoIEEE
+		bl		signBit			; branch and link to signBit
 		bl		TNSmant			; branch and link to TNSmant
 		bl		TNSexp			; branch and link to TNSexp
 		bl		TNSexpCnv		; branch and link to TNSexpCnv
 		bl		TNSmantCnv		; branch and link to TNSmantCnv
 		bl		buildIEEE		; branch and link to buildIEEE
+								; start IEEE to TNS
+		ldr		r0,=IEEE		; r0 = address IEEE
+		ldr 	r1,[r0]			; r1 = value at address r0
+		bl		signBit			; branch and link to signBit
+		bl		IEEEmant		; branch and link to IEEEmant
 
 		b		st				; branch to ending loop
 		
@@ -69,9 +75,16 @@ TNSmantCnv						; IEEE = TNS mantissa + 1 bit
 		mov		pc,r14			; return to caller
 		
 buildIEEE
-		ORR		r11,r3,r4		; r11 = combined exponent and mantissa
-		ORR		r11,r11,r2		; r11 = combined sign bit
+		orr		r11,r3,r4		; r11 = combined exponent and mantissa
+		orr		r11,r11,r2		; r11 = combined sign bit
 		mov 	pc,r14			; return to caller
+		
+IEEEmant
+		ldr		r0,=IEEEmantM
+		ldr		r12,[r0]
+		and		r2,r12,r1
+		mov		pc,r14
+		
 		
 		
 		
@@ -85,5 +98,6 @@ IEEE		dcd		0x41640000
 signM		dcd		0x80000000
 TNSmantM	dcd		0x7FFFFE00
 TNSexpM		dcd		0x000001FF
+IEEEmantM	dcd		0x007FFFFF
 	
 		END
