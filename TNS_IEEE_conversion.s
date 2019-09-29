@@ -33,6 +33,7 @@ main
 		ldr		r1,[r0]			; r1 = valule at address r0
 		bl		signBit			; branch and link to TNStoIEEE
 		bl		TNSfrac			; branch and link to TNSfrac
+		bl		TNSexp			; branch and link to TNSexp
 
 		b		st				; branch to ending loop
 		
@@ -47,6 +48,12 @@ TNSfrac
 		ldr		r12,[r0]		; r12 = TNSfracM value
 		and		r3,r1,r12		; r3 = TNS fraction
 		mov		pc,r14			; return to caller
+		
+TNSexp
+		ldr		r0,=TNSexpM		; r0 = address TNSexpM
+		ldr		r12,[r0]		; r12 = TNSexpM value
+		and		r4,r1,r12		; r4 = TNS exponent
+		mov		pc,r14			; return to caller
 
 
 
@@ -57,5 +64,6 @@ TNS			dcd		0x64000103
 IEEE		dcd		0x41640000
 signM		dcd		0x80000000
 TNSfracM	dcd		0x7FFFFE00
+TNSexpM		dcd		0x000001FF
 	
 		END
