@@ -32,8 +32,11 @@ main
 		ldr		r0,=TNS 		; r0 = address TNS
 		ldr		r1,[r0]			; r1 = valule at address r0
 		bl		signBit			; branch and link to TNStoIEEE
-		bl		TNSfrac			; branch and link to TNSfrac
+		bl		TNSmant			; branch and link to TNSmant
 		bl		TNSexp			; branch and link to TNSexp
+		bl		TNSexpCnv		; branch and link to TNSexpCnv
+		bl		TNSmantCnv		; branch and link to TNSmantCnv
+		bl		buildIEEE		; branch and link to buildIEEE
 
 		b		st				; branch to ending loop
 		
@@ -43,8 +46,8 @@ signBit
 		and		r2,r1,r12		; r2 = TNS sign bit
 		mov		pc,r14			; return to caller
 
-TNSfrac
-		ldr		r0,=TNSfracM	; r0 = address TNSfracM
+TNSmant
+		ldr		r0,=TNSmantM	; r0 = address TNSfracM
 		ldr		r12,[r0]		; r12 = TNSfracM value
 		and		r3,r1,r12		; r3 = TNS fraction
 		mov		pc,r14			; return to caller
@@ -55,6 +58,23 @@ TNSexp
 		and		r4,r1,r12		; r4 = TNS exponent
 		mov		pc,r14			; return to caller
 
+TNSexpCnv						; TNS BIAS = 256 convert to IEEE BIAS 127
+		sub		r4,r4,#256		; r3 = TNS exponent - 256 
+		add		r4,r4,#127		; r3 = converted to IEEE exponent
+		lsl		r4,r4,#23		; position converted IEEE exponent
+		mov		pc,r14			; return to caller
+		
+TNSmantCnv						; IEEE = TNS mantissa + 1 bit
+		lsr		r3,r3,#8		; TNS mantissa gains single bit
+		mov		pc,r14			; return to caller
+		
+buildIEEE
+		ORR		r11,r3,r4		; r11 = combined exponent and mantissa
+		ORR		r11,r11,r2		; r11 = combined sign bit
+		mov 	pc,r14			; return to caller
+		
+		
+		
 
 
 
@@ -63,7 +83,7 @@ st		b		st
 TNS			dcd		0x64000103
 IEEE		dcd		0x41640000
 signM		dcd		0x80000000
-TNSfracM	dcd		0x7FFFFE00
+TNSmantM	dcd		0x7FFFFE00
 TNSexpM		dcd		0x000001FF
 	
 		END
