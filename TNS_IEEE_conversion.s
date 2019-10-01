@@ -50,6 +50,7 @@ main							; start TNS to IEEE
 		
 								; compare converted numbers to source
 		bl		compareTNS		; branch and link to compareTNS
+		bl		compareIEEE		; branch and link to compareIEEE
 
 		b		st				; branch to ending loop
 		
@@ -112,9 +113,19 @@ buildTNS						; combine TNS components
 		lsl		r10,r10,#1		; clear signbit
 		lsr		r10,r10,#1		; retain bit position
 		orr		r10,r10,r2		; r10 = combined sign bit
+		mov		pc,r14			; return to caller
 		
 compareTNS
+		ldr		r0,=TNS 		; r0 = address TNS
+		ldr		r1,[r0]			; r1 = valule at address r0
+		teq		r10,r1			; set zero flag if equal
+		mov 	pc,r14			; return to caller
 		
+compareIEEE
+		ldr		r0,=IEEE		; r0 = address IEEE
+		ldr 	r1,[r0]			; r1 = value at address r0	
+		teq		r11,r1			; set zero flag if equal
+		mov 	pc,r14			; return to caller		
 
 st		b		st				; continuous loop
 
