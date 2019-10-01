@@ -93,6 +93,8 @@ TNSexpCnv						; TNS BIAS 256 convert to IEEE BIAS 127
 		
 buildIEEE						; combine IEEE components
 		orr		r11,r3,r4		; r11 = combined exponent and mantissa
+		lsl		r11,r11,#1		; clear sign bit
+		lsr		r11,r11,#1		; retain bit position
 		orr		r11,r11,r2		; r11 = combined sign bit
 		mov 	pc,r14			; return to caller
 		
@@ -109,7 +111,8 @@ IEEEexp
 		mov 	pc,r14			; return to caller
 		
 IEEEmantCnv
-		lsl		r3,r3,#8		; remove most significant bit
+		lsr		r3,r3,#1		; remove least significant bit
+		lsl		r3,r3,#9		; position mantissa
 		mov		pc,r14			; return to caller
 		
 IEEEexpCnv
