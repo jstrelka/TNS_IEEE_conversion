@@ -1,9 +1,10 @@
 ;-----------------------------------------------
 ;Name: Justin Strelka
-;Date: ??/??/19
+;Date: 09/30/19
 ;Professor: Ranjidha Rajan
 ;Course: CS_2400 Section 2
-;Program: In-class?
+;Program: Homework 04 (Convert TNS and IEEE)
+;Hours:	8 Hours with design
 ;-----------------------------------------------      
                    AREA    RESET, DATA, READONLY
 
@@ -28,7 +29,18 @@ __Vectors
 Reset_Handler
 ;------------------------------------------------------------
 
-main							; start TNS to IEEE
+main							; start conversions
+		bl		TNStoIEEE		; branch and link to TNStoIEEE
+		bl		IEEEtoTNS		; branch and link to IEEEtoTNS
+		
+								; compare converted numbers to source
+		bl		compareTNS		; branch and link to compareTNS
+		bl		compareIEEE		; branch and link to compareIEEE
+
+		b		st				; branch to ending loop
+		
+TNStoIEEE						; convert TNS to IEEE
+		mov		r9,lr  			; r9 = store lr for return to main
 		ldr		r0,=TNS 		; r0 = address TNS
 		ldr		r1,[r0]			; r1 = valule at address r0
 		bl		signBit			; branch and link to signBit
@@ -37,8 +49,10 @@ main							; start TNS to IEEE
 		bl		TNSmantCnv		; branch and link to TNSmantCnv
 		bl		TNSexpCnv		; branch and link to TNSexpCnv
 		bl		buildIEEE		; branch and link to buildIEEE
+		mov		pc,r9			; return to caller
 		
-								; start IEEE to TNS
+IEEEtoTNS						; convert IEEE to TNS
+		mov		r9,lr			; r9 = store lr for return to main
 		ldr		r0,=IEEE		; r0 = address IEEE
 		ldr 	r1,[r0]			; r1 = value at address r0
 		bl		signBit			; branch and link to signBit
@@ -47,12 +61,7 @@ main							; start TNS to IEEE
 		bl		IEEEmantCnv		; branch and link to IEEEmantCnv
 		bl		IEEEexpCnv		; branch and link to IEEEexpCnv
 		bl		buildTNS		; branch and link to buildTNS
-		
-								; compare converted numbers to source
-		bl		compareTNS		; branch and link to compareTNS
-		bl		compareIEEE		; branch and link to compareIEEE
-
-		b		st				; branch to ending loop
+		mov		pc,r9			; return to caller
 		
 signBit
 		ldr		r0,=signM		; r0 = address signMask
