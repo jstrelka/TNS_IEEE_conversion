@@ -28,28 +28,28 @@ __Vectors
 Reset_Handler
 ;------------------------------------------------------------
 
-main
-								; start TNS to IEEE
+main							; start TNS to IEEE
 		ldr		r0,=TNS 		; r0 = address TNS
 		ldr		r1,[r0]			; r1 = valule at address r0
 		bl		signBit			; branch and link to signBit
 		bl		TNSmant			; branch and link to TNSmant
 		bl		TNSexp			; branch and link to TNSexp
-		bl		TNSexpCnv		; branch and link to TNSexpCnv
 		bl		TNSmantCnv		; branch and link to TNSmantCnv
+		bl		TNSexpCnv		; branch and link to TNSexpCnv
 		bl		buildIEEE		; branch and link to buildIEEE
+		
 								; start IEEE to TNS
-		mov		r2,#0
-		mov		r3,#0
-		mov		r4,#0
 		ldr		r0,=IEEE		; r0 = address IEEE
 		ldr 	r1,[r0]			; r1 = value at address r0
 		bl		signBit			; branch and link to signBit
 		bl		IEEEmant		; branch and link to IEEEmant
 		bl		IEEEexp			; branch and link to IEEEexp
-		bl		IEEEexpCnv		; branch and link to IEEEexpCnv
 		bl		IEEEmantCnv		; branch and link to IEEEmantCnv
+		bl		IEEEexpCnv		; branch and link to IEEEexpCnv
 		bl		buildTNS		; branch and link to buildTNS
+		
+								; compare converted numbers to source
+		bl		compareTNS		; branch and link to compareTNS
 
 		b		st				; branch to ending loop
 		
@@ -60,8 +60,8 @@ signBit
 		mov		pc,r14			; return to caller
 
 TNSmant
-		ldr		r0,=TNSmantM	; r0 = address TNSfracM
-		ldr		r12,[r0]		; r12 = TNSfracM value
+		ldr		r0,=TNSmantM	; r0 = address TNSmantM
+		ldr		r12,[r0]		; r12 = TNSmantM value
 		and		r3,r1,r12		; r3 = TNS mantissa
 		mov		pc,r14			; return to caller
 		
@@ -71,17 +71,17 @@ TNSexp
 		and		r4,r1,r12		; r4 = TNS exponent
 		mov		pc,r14			; return to caller
 
-TNSexpCnv						; TNS BIAS = 256 convert to IEEE BIAS 127
-		sub		r4,r4,#256		; r3 = TNS exponent - 256 
-		add		r4,r4,#127		; r3 = converted to IEEE exponent
-		lsl		r4,r4,#23		; position converted IEEE exponent
-		mov		pc,r14			; return to caller
-		
 TNSmantCnv						; IEEE = TNS mantissa + 1 bit
 		lsr		r3,r3,#8		; TNS mantissa gains single bit
 		mov		pc,r14			; return to caller
+
+TNSexpCnv						; TNS BIAS 256 convert to IEEE BIAS 127
+		sub		r4,r4,#129		; r4 = TNS exponent - 129 
+								; r4 = converted IEEE exponent
+		lsl		r4,r4,#23		; position IEEE exponent
+		mov		pc,r14			; return to caller
 		
-buildIEEE
+buildIEEE						; combine IEEE components
 		orr		r11,r3,r4		; r11 = combined exponent and mantissa
 		orr		r11,r11,r2		; r11 = combined sign bit
 		mov 	pc,r14			; return to caller
@@ -98,30 +98,33 @@ IEEEexp
 		and		r4,r1,r12		; r4 = IEEE exponent
 		mov 	pc,r14			; return to caller
 		
-IEEEexpCnv
-		sub		r4,r4,#127
-		add		r4,r4,#256
-		lsr		r4,r4,#22
-		mov		pc,r14
-	
 IEEEmantCnv
-		lsl		r3,r3,#9
-		mov		pc,r14
+		lsl		r3,r3,#8		; remove most significant bit
+		mov		pc,r14			; return to caller
 		
-buildTNS
-		orr		r10,r3,r4
-		lsl		r10,r10,#1
-		lsr		r10,r10,#1
-		orr		r10,r10,r2		
+IEEEexpCnv
+		lsr		r4,r4,#23		; position mantissa
+		add		r4,r4,#129		; IEEE BIAs 127 convert to TNS BIAS 256
+		mov		pc,r14			; return to caller
+	
+buildTNS						; combine TNS components
+		orr		r10,r3,r4		; r10 = combined exponent and mantissa
+		lsl		r10,r10,#1		; clear signbit
+		lsr		r10,r10,#1		; retain bit position
+		orr		r10,r10,r2		; r10 = combined sign bit
+		
+compareTNS
+		
 
-st		b		st
+st		b		st				; continuous loop
 
-TNS			dcd		0x64000103
-IEEE		dcd		0x41640000
-signM		dcd		0x80000000
-TNSmantM	dcd		0x7FFFFE00
-TNSexpM		dcd		0x000001FF
-IEEEmantM	dcd		0x007FFFFF
-IEEEexpM	dcd		0x7F800000
+TNS			dcd		0x7E000104	; TNS number input
+IEEE		dcd		0x41FE0000	; IEEE number input
+	
+signM		dcd		0x80000000	; universal signmask
+TNSmantM	dcd		0x7FFFFE00	; TNS mantissa mask
+TNSexpM		dcd		0x000001FF	; TNS exponent mask
+IEEEmantM	dcd		0x007FFFFF	; IEEE mantissa mask
+IEEEexpM	dcd		0x7F800000	; IEEE exponent mask
 	
 		END
