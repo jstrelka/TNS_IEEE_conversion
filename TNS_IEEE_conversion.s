@@ -40,19 +40,19 @@ main							; start conversions
 		b		st				; branch to ending loop
 		
 TNStoIEEE						; convert TNS to IEEE
-		mov		r9,lr  			; r9 = store lr for return to main
+		push	{lr}  			; store lr for return to main
 		ldr		r0,=TNS 		; r0 = address TNS
-		ldr		r1,[r0]			; r1 = valule at address r0
+		ldr		r1,[r0]			; r1 = value at address r0
 		bl		signBit			; branch and link to signBit
 		bl		TNSmant			; branch and link to TNSmant
 		bl		TNSexp			; branch and link to TNSexp
 		bl		TNSmantCnv		; branch and link to TNSmantCnv
 		bl		TNSexpCnv		; branch and link to TNSexpCnv
 		bl		buildIEEE		; branch and link to buildIEEE
-		mov		pc,r9			; return to caller
+		pop		{pc}			; return to caller
 		
 IEEEtoTNS						; convert IEEE to TNS
-		mov		r9,lr			; r9 = store lr for return to main
+		push	{lr}			; store lr for return to main
 		ldr		r0,=IEEE		; r0 = address IEEE
 		ldr 	r1,[r0]			; r1 = value at address r0
 		bl		signBit			; branch and link to signBit
@@ -61,7 +61,7 @@ IEEEtoTNS						; convert IEEE to TNS
 		bl		IEEEmantCnv		; branch and link to IEEEmantCnv
 		bl		IEEEexpCnv		; branch and link to IEEEexpCnv
 		bl		buildTNS		; branch and link to buildTNS
-		mov		pc,r9			; return to caller
+		pop		{pc}			; return to caller
 		
 signBit
 		ldr		r0,=signM		; r0 = address signMask
