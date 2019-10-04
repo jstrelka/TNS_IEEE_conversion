@@ -1,10 +1,10 @@
 ;-----------------------------------------------
 ;Name: Justin Strelka
-;Date: 09/30/19
+;Date: 10/3/19
 ;Professor: Ranjidha Rajan
 ;Course: CS_2400 Section 2
 ;Program: Homework 04 (Convert TNS and IEEE)
-;Hours:	8 Hours with design
+;Hours:	6 Hours with design
 ;-----------------------------------------------      
                    AREA    RESET, DATA, READONLY
 
@@ -28,6 +28,21 @@ __Vectors
 
 Reset_Handler
 ;------------------------------------------------------------
+
+		ldr 	r1,=0x40
+		ldr		r2,=0x4B
+		add 	r3,r1,r2
+
+
+		mov		r1,#20
+		mov		r1,r1,asr#4
+
+		mov 	r1,#1
+		mov		r2,#4
+		mov		r3,#2
+		sub 	r3,r2,r3 ;32-r2
+		ror		r1,r1,r3
+
 
 main							; start conversions
 		bl		TNStoIEEE		; branch and link to TNStoIEEE
@@ -142,7 +157,8 @@ compareIEEE
 st		b		st				; continuous loop
 
 TNS			dcd		0x7E000104	; TNS number input
-IEEE		dcd		0x41FE0000	; IEEE number input
+IEEE		dcd		0x3e200000
+;IEEE		dcd		0x41FE0000	; IEEE number input
 	
 signM		dcd		0x80000000	; universal signmask
 TNSmantM	dcd		0x7FFFFE00	; TNS mantissa mask
